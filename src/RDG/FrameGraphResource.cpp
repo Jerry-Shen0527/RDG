@@ -32,6 +32,24 @@ namespace Furnace
         return { pComputePassData->command_list, pComputePassData->state };
     }
 
+    FrameGraphResources::CudaPassInfo FrameGraphResources::getCudaPassInfo() const
+    {
+        // this cast is safe because this can only be called from a RenderPassNode
+        const auto& renderPassNode = static_cast<const CudaPassNode&>(mPassNode);
+        const CudaPassNode::CudaPassData* pCudaPassData = renderPassNode.getCudaPassData();
+        return { };
+    }
+
+#ifdef RDG_WITH_OPTIX
+    FrameGraphResources::OptiXPassInfo FrameGraphResources::getOptiXPassInfo() const
+    {
+        // this cast is safe because this can only be called from a RenderPassNode
+        const auto& renderPassNode = static_cast<const OptiXPassNode&>(mPassNode);
+        const OptiXPassNode::OptiXPassData* pOptiXPassData = renderPassNode.getOptiXPassData();
+        return { pOptiXPassData->solid_handle, pOptiXPassData->sbt };
+    }
+#endif
+
     VirtualResource& FrameGraphResources::getResource(FrameGraphHandle handle) const
     {
         VirtualResource* const resource = mFrameGraph.getResource(handle);

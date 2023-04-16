@@ -255,4 +255,116 @@ namespace Furnace
         RayTracingPassData mRayTracingData;
     };
 
+
+    
+#ifdef RDG_WITH_CUDA
+    class CudaPassNode : public PassNode
+    {
+       public:
+        class CudaPassData
+        {
+           public:
+            const char* name = {};
+            FrameGraphCudaPass::Descriptor descriptor;
+        };
+
+        CudaPassNode(FrameGraph& fg, const char* name, FrameGraphPassBase* base) noexcept
+            : PassNode(fg),
+              mPassBase(base),
+              mName(name)
+        {
+        }
+
+        std::unique_ptr<FrameGraphPassBase> mPassBase;
+
+        void declareCudaPass(
+            FrameGraph& fg,
+            FrameGraph::Builder& builder,
+            const char* name,
+            const FrameGraphCudaPass::Descriptor& descriptor)
+        {
+            mCudaData.name = name;
+            mCudaData.descriptor = descriptor;
+        }
+
+        const CudaPassData* getCudaPassData() const noexcept
+        {
+            return &mCudaData;
+        }
+
+    private:
+        void execute(const FrameGraphResources& resources, nvrhi::DeviceHandle& device) noexcept
+        override
+        {
+            mPassBase->execute(resources, device);
+        }
+
+        const char* const mName;
+
+        void resolve() noexcept override
+        {
+        }
+
+        CudaPassData mCudaData;
+    };
+#endif
+
+#ifdef RDG_WITH_OPTIX
+
+    class OptiXPassNode : public PassNode
+    {
+       public:
+        class OptiXPassData
+        {
+           public:
+            const char* name = {};
+
+            FrameGraphOptiXPass::Descriptor descriptor;
+
+            void devirtualize(FrameGraph& fg, ResourceAllocator& resourceAllocator) noexcept;
+
+            void destroy(ResourceAllocator& resourceAllocator) noexcept;
+
+            nvrhi::OptiXPipelineHandle solid_handle;
+            OptixShaderBindingTable sbt = {};
+
+           private:
+            std::vector<nvrhi::OptiXModuleHandle> solidModules;
+            nvrhi::OptiXProgramGroupHandle solid_raygen_group;
+            std::vector<nvrhi::OptiXProgramGroupHandle> solid_hitgroup_group;
+            std::vector<nvrhi::OptiXProgramGroupHandle> solid_miss_group;
+
+            nvrhi::CudaLinearBufferHandle raygen_record;
+            nvrhi::CudaLinearBufferHandle hitgroup_record;
+            nvrhi::CudaLinearBufferHandle miss_record;
+        };
+
+        OptiXPassNode(FrameGraph& fg, const char* name, FrameGraphPassBase* base) noexcept
+            : PassNode(fg),
+              mPassBase(base),
+              mName(name)
+        {
+        }
+
+        std::unique_ptr<FrameGraphPassBase> mPassBase;
+
+        void declareOptiXPass(
+            FrameGraph& fg,
+            FrameGraph::Builder& builder,
+            const char* name,
+            const FrameGraphOptiXPass::Descriptor& descriptor);
+
+        const OptiXPassData* getOptiXPassData() const noexcept;
+
+       private:
+        void execute(const FrameGraphResources& resources, nvrhi::DeviceHandle& device) noexcept
+            override;
+
+        const char* const mName;
+
+        void resolve() noexcept override;
+        OptiXPassData mOptiXData;
+    };
+#endif
+
 }

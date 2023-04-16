@@ -55,9 +55,24 @@ namespace nvrhi
 
 namespace Furnace
 {
+
 #define NVRHI_RESOURCE_LIST                                                                     \
     Texture, GraphicsPipeline, Framebuffer, CommandList, BindingLayout, BindlessLayout, Buffer, \
         BindingSet, ComputePipeline, Sampler, DescriptorTable
+
+#ifdef RDG_WITH_CUDA
+#define NVRHI_RESOURCE_LIST                                                                     \
+    Texture, GraphicsPipeline, Framebuffer, CommandList, BindingLayout, BindlessLayout, Buffer, \
+        BindingSet, ComputePipeline, Sampler, DescriptorTable, CudaLinearBuffer,                \
+        CudaSurfaceObject,
+#endif
+
+#ifdef RDG_WITH_OPTIX
+#define NVRHI_RESOURCE_LIST                                                                     \
+    Texture, GraphicsPipeline, Framebuffer, CommandList, BindingLayout, BindlessLayout, Buffer, \
+        BindingSet, ComputePipeline, Sampler, DescriptorTable, CudaLinearBuffer,                \
+        CudaSurfaceObject, OptiXModule, OptiXProgramGroup, OptiXPipeline
+#endif
 
 #define NVRHI_RT_RESOURCE_LIST Pipeline, ShaderTable, AccelStruct
 #define NVRHI_NAMESPACE_WRAP(RSC) WRAPPED_MACRO(nvrhi, RSC)

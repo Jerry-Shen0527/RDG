@@ -38,9 +38,10 @@ namespace Furnace
                 break;
             case PassType::Compute: node = new ComputePassNode(*this, name, base);
                 break;
-
             case PassType::RayTracing: node = new RayTracingPassNode(*this, name, base);
                 break;
+            case PassType::Cuda: node = new CudaPassNode(*this, name, base); break;
+            case PassType::OptiX: node = new OptiXPassNode(*this, name, base); break;
             default: ;
         }
         base->setNode(node);
@@ -301,6 +302,20 @@ namespace Furnace
             *this,
             name,
             desc);
+    }
+
+    void FrameGraph::Builder::declareCudaPass(
+        const char* name,
+        const FrameGraphCudaPass::Descriptor& desc)
+    {
+        static_cast<CudaPassNode*>(mPassNode)->declareCudaPass(mFrameGraph, *this, name, desc);
+    }
+
+    void FrameGraph::Builder::declareOptiXPass(
+        const char* name,
+        const FrameGraphOptiXPass::Descriptor& desc)
+    {
+        static_cast<OptiXPassNode*>(mPassNode)->declareOptiXPass(mFrameGraph, *this, name, desc);
     }
 
     void FrameGraph::execute(nvrhi::DeviceHandle device) noexcept

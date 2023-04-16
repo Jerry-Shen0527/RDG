@@ -41,8 +41,14 @@ namespace Furnace
         friend class PassNode;
         friend class RenderPassNode;
         friend class ComputePassNode;
-        friend class CudaPassNode;
         friend class RayTracingPassNode;
+
+#ifdef RDG_WITH_CUDA
+        friend class CudaPassNode;
+#endif
+#ifdef RDG_WITH_OPTIX
+        friend class OptiXPassNode;
+#endif
 
         PassNode* mNode = nullptr;
 
@@ -131,12 +137,26 @@ namespace Furnace
         friend class RenderPassNode;
         friend class ComputePassNode;
         friend class RayTracingPassNode;
+#ifdef RDG_WITH_CUDA
+        friend class CudaPassNode;
+#endif
+#ifdef RDG_WITH_OPTIX
+        friend class OptiXPassNode;
+#endif
 
         enum class PassType
         {
             Render,
             Compute,
             RayTracing
+#ifdef RDG_WITH_CUDA
+            ,
+            Cuda
+#endif
+#ifdef RDG_WITH_OPTIX
+            ,
+            OptiX
+#endif
         };
 
         class Builder
@@ -215,6 +235,13 @@ namespace Furnace
             void declareRayTracingPass(
                 const char* name,
                 const FrameGraphRayTracingPass::Descriptor& desc);
+
+#ifdef RDG_WITH_CUDA
+            void declareCudaPass(const char* name, const FrameGraphCudaPass::Descriptor& desc);
+#endif
+#ifdef RDG_WITH_OPTIX
+            void declareOptiXPass(const char* name, const FrameGraphOptiXPass::Descriptor& desc);
+#endif
 
         private:
             template<typename...Args>

@@ -2,6 +2,10 @@
 
 #include<nvrhi/nvrhi.h>
 
+#ifdef RDG_WITH_OPTIX
+#include <optix.h>
+#endif
+
 namespace nvrhi
 {
     template<typename T, uint32_t _max_elements>
@@ -42,7 +46,7 @@ namespace nvrhi
 
     inline bool operator==(const TextureDesc& lhs, const TextureDesc& rhs)
     {
-        return lhs.width == rhs.width
+        bool ret = lhs.width == rhs.width
                && lhs.height == rhs.height
                && lhs.depth == rhs.depth
                && lhs.arraySize == rhs.arraySize
@@ -61,6 +65,9 @@ namespace nvrhi
                && lhs.useClearValue == rhs.useClearValue
                && lhs.initialState == rhs.initialState
                && lhs.keepInitialState == rhs.keepInitialState;
+#ifdef RDG_WITH_CUDA
+        return ret && lhs.mapped_id == rhs.mapped_id;
+#endif
     }
 
     inline bool operator!=(const TextureDesc& lhs, const TextureDesc& rhs)
@@ -318,21 +325,6 @@ namespace nvrhi
         }
 
 
-        inline bool operator==(const AccelStructDesc& lhs, const AccelStructDesc& rhs)
-        {
-            return lhs.topLevelMaxInstances == rhs.topLevelMaxInstances &&
-                   lhs.bottomLevelGeometries == rhs.bottomLevelGeometries &&
-                   lhs.buildFlags == rhs.buildFlags && lhs.debugName == rhs.debugName &&
-                   lhs.trackLiveness == rhs.trackLiveness &&
-                   lhs.isTopLevel == rhs.isTopLevel && lhs.isVirtual == rhs.isVirtual;
-        }
-
-        inline bool operator!=(const AccelStructDesc& lhs, const AccelStructDesc& rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-
         inline bool operator==(const GeometryTriangles& lhs, const GeometryTriangles& rhs)
         {
             return lhs.indexBuffer == rhs.indexBuffer && lhs.vertexBuffer == rhs.vertexBuffer &&
@@ -357,12 +349,145 @@ namespace nvrhi
         {
             return lhs.geometryData.triangles == rhs.geometryData.triangles &&
                    lhs.useTransform == rhs.useTransform && lhs.flags == rhs.flags &&
-                   lhs.geometryType == rhs.geometryType;
+                   lhs.geometryType == rhs.geometryType && memcmp(
+                       lhs.transform,
+                       rhs.transform,
+                       sizeof(nvrhi::rt::AffineTransform));
         }
 
         inline bool operator!=(const GeometryDesc& lhs, const GeometryDesc& rhs)
         {
             return !(lhs == rhs);
         }
+
+
+        inline bool operator==(const AccelStructDesc& lhs, const AccelStructDesc& rhs)
+        {
+            return lhs.topLevelMaxInstances == rhs.topLevelMaxInstances &&
+                   lhs.bottomLevelGeometries == rhs.bottomLevelGeometries &&
+                   lhs.buildFlags == rhs.buildFlags && lhs.debugName == rhs.debugName &&
+                   lhs.trackLiveness == rhs.trackLiveness && lhs.isTopLevel == rhs.isTopLevel &&
+                   lhs.isVirtual == rhs.isVirtual;
+        }
+
+        inline bool operator!=(const AccelStructDesc& lhs, const AccelStructDesc& rhs)
+        {
+            return !(lhs == rhs);
+        }
     }
+
+#ifdef NVRHI_WITH_CUDA
+    inline bool operator==(const CudaLinearBufferDesc& lhs, const CudaLinearBufferDesc& rhs)
+    {
+        return lhs.size == rhs.size && lhs.element_size == rhs.element_size &&
+               lhs.bufferType == rhs.bufferType && lhs.mapped_id == rhs.mapped_id;
+    }
+
+    inline bool operator!=(const CudaLinearBufferDesc& lhs, const CudaLinearBufferDesc& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator==(const CudaSurfaceObjectDesc& lhs, const CudaSurfaceObjectDesc& rhs)
+    {
+        return lhs.width == rhs.width && lhs.height == rhs.height &&
+               lhs.element_size == rhs.element_size && lhs.bufferType == rhs.bufferType &&
+               lhs.mapped_id == rhs.mapped_id;
+    }
+
+    inline bool operator!=(const CudaSurfaceObjectDesc& lhs, const CudaSurfaceObjectDesc& rhs)
+    {
+        return !(lhs == rhs);
+    }
+#endif
+
+#ifdef NVRHI_WITH_OPTIX
+    inline bool operator==(const OptixBuiltinISOptions& lhs, const OptixBuiltinISOptions& rhs)
+    {
+        return lhs.builtinISModuleType == rhs.builtinISModuleType &&
+               lhs.usesMotionBlur == rhs.usesMotionBlur && lhs.buildFlags == rhs.buildFlags &&
+               lhs.curveEndcapFlags == rhs.curveEndcapFlags;
+    }
+
+    inline bool operator==(
+        const OptixModuleCompileOptions& lhs,
+        const OptixModuleCompileOptions& rhs)
+    {
+        return lhs.maxRegisterCount == rhs.maxRegisterCount && lhs.optLevel == rhs.optLevel &&
+               lhs.debugLevel == rhs.debugLevel && lhs.boundValues == rhs.boundValues &&
+               lhs.numBoundValues == rhs.numBoundValues &&
+               lhs.numPayloadTypes == rhs.numPayloadTypes && lhs.payloadTypes == rhs.payloadTypes;
+    }
+
+    inline bool operator==(
+        const OptixPipelineCompileOptions& lhs,
+        const OptixPipelineCompileOptions& rhs)
+    {
+        return lhs.usesMotionBlur == rhs.usesMotionBlur &&
+               lhs.traversableGraphFlags == rhs.traversableGraphFlags &&
+               lhs.numPayloadValues == rhs.numPayloadValues &&
+               lhs.numAttributeValues == rhs.numAttributeValues &&
+               lhs.exceptionFlags == rhs.exceptionFlags &&
+               lhs.pipelineLaunchParamsVariableName == rhs.pipelineLaunchParamsVariableName &&
+               lhs.usesPrimitiveTypeFlags == rhs.usesPrimitiveTypeFlags;
+    }
+
+    inline bool operator==(const OptiXModuleDesc& lhs, const OptiXModuleDesc& rhs)
+    {
+        return lhs.module_compile_options == rhs.module_compile_options &&
+               lhs.pipeline_compile_options == rhs.pipeline_compile_options &&
+               lhs.builtinISOptions == rhs.builtinISOptions && lhs.ptx == rhs.ptx;
+    }
+
+    inline bool operator!=(const OptiXModuleDesc& lhs, const OptiXModuleDesc& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator==(const OptixPipelineLinkOptions& lhs, const OptixPipelineLinkOptions& rhs)
+    {
+        return lhs.maxTraceDepth == rhs.maxTraceDepth;
+    }
+
+    inline bool operator==(
+        const OptixProgramGroupSingleModule& lhs,
+        const OptixProgramGroupSingleModule& rhs)
+    {
+        return lhs.module == rhs.module && lhs.entryFunctionName == rhs.entryFunctionName;
+    }
+
+    inline bool operator==(const OptixProgramGroupDesc& lhs, const OptixProgramGroupDesc& rhs)
+    {
+        return lhs.kind == rhs.kind && lhs.flags == rhs.flags && lhs.raygen == rhs.raygen;
+    }
+
+    inline bool operator==(const OptixProgramGroupOptions& lhs, const OptixProgramGroupOptions& rhs)
+    {
+        return lhs.payloadType == rhs.payloadType;
+    }
+
+
+    inline bool operator==(const OptiXPipelineDesc& lhs, const OptiXPipelineDesc& rhs)
+    {
+        return lhs.pipeline_compile_options == rhs.pipeline_compile_options &&
+               lhs.pipeline_link_options == rhs.pipeline_link_options;
+    }
+
+    inline bool operator!=(const OptiXPipelineDesc& lhs, const OptiXPipelineDesc& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    inline bool operator==(const OptiXProgramGroupDesc& lhs, const OptiXProgramGroupDesc& rhs)
+    {
+        return lhs.program_group_options == rhs.program_group_options &&
+               lhs.prog_group_desc == rhs.prog_group_desc;
+    }
+
+    inline bool operator!=(const OptiXProgramGroupDesc& lhs, const OptiXProgramGroupDesc& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+#endif
 }

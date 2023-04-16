@@ -20,6 +20,7 @@
 
 #include "ResourceAllocator.h"
 #include "donut/engine/View.h"
+#include "RDG/OptiXSupport.h"
 
 #define NVRHI_ENUM_CLASS_FLAG_OPERATORS(T) \
     inline T operator | (T a, T b) { return T(uint32_t(a) | uint32_t(b)); } \
@@ -234,6 +235,78 @@ namespace Furnace
             BindingLayoutVector binding_layouts;
         };
     };
+
+#ifdef RDG_WITH_CUDA
+    struct FrameGraphCudaPass
+    {
+        struct Descriptor
+        {
+            Descriptor()
+            {
+            }
+        };
+    };
+#endif
+
+#ifdef RDG_WITH_OPTIX
+
+    struct FrameGraphOptiXPass
+    {
+        struct Descriptor
+        {
+            Descriptor()
+            {
+            }
+
+            friend class OptiXPassNode;
+
+            nvrhi::OptiXPipelineDesc pipeline_desc;
+
+            std::vector<nvrhi::OptiXModuleDesc> module_descs;
+
+            std::pair<nvrhi::OptiXProgramGroupDesc, int> ray_gen_group;
+            std::vector<std::tuple<nvrhi::OptiXProgramGroupDesc, int, int, int>> hit_group_group;
+            std::vector<std::pair<nvrhi::OptiXProgramGroupDesc, int>> miss_group;
+
+           private:
+            void resolve(ResourceAllocator& resourceAllocator)
+            {
+#ifdef _DEBUG  // Enables debug exceptions during optix launches. This may incur significant
+               // performance cost and should only be done during development.
+                pipeline_desc.pipeline_compile_options.exceptionFlags =
+                    OPTIX_EXCEPTION_FLAG_DEBUG | OPTIX_EXCEPTION_FLAG_TRACE_DEPTH |
+                    OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
+
+#else
+                pipeline_desc.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
+#endif
+                for (int i = 0; i < module_descs.size(); ++i)
+                {
+                    module_descs[i].pipeline_compile_options =
+                        pipeline_desc.pipeline_compile_options;
+#ifdef _DEBUG
+                    module_descs[i].module_compile_options.optLevel =
+                        OPTIX_COMPILE_OPTIMIZATION_LEVEL_0;
+                    module_descs[i].module_compile_options.debugLevel =
+                        OPTIX_COMPILE_DEBUG_LEVEL_FULL;
+#else
+                    module_descs[i].module_compile_options.optLevel =
+                        OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+                    module_descs[i].module_compile_options.debugLevel =
+                        OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+#endif
+                }
+            }
+
+            OptixShaderFunc raygen_name;
+            std::vector<HitGroup> hitgroup_names;
+            std::vector<OptixShaderFunc> miss_names;
+        };
+
+        uint32_t id = 0;
+    };
+#endif
+
 }
 
 #undef NVRHI_ENUM_CLASS_FLAG_OPERATORS

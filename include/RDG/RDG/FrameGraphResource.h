@@ -37,6 +37,19 @@ namespace Furnace
             nvrhi::rt::State state;
         };
 
+#ifdef RDG_WITH_CUDA
+        struct CudaPassInfo
+        {
+        };
+#endif
+
+#ifdef RDG_WITH_OPTIX
+        struct OptiXPassInfo
+        {
+            nvrhi::OptiXPipelineHandle pipeline;
+            OptixShaderBindingTable sbt;
+        };
+#endif
 
         template<typename RESOURCE, typename ... Args>
         const RESOURCE& get(FrameGraphId<RESOURCE> handle, Args&&... args) const
@@ -65,6 +78,14 @@ namespace Furnace
         RenderPassInfo getRenderPassInfo(uint32_t id = 0u) const;
         ComputePassInfo getComputePassInfo() const;
         RayTracingPassInfo getRayTracingPassInfo() const;
+
+#ifdef RDG_WITH_CUDA
+        CudaPassInfo getCudaPassInfo() const;
+#endif
+
+#ifdef RDG_WITH_OPTIX
+        OptiXPassInfo getOptiXPassInfo() const;
+#endif
 
     private:
         VirtualResource& getResource(FrameGraphHandle handle) const;
