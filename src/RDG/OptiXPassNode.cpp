@@ -1,3 +1,5 @@
+#ifdef RDG_WITH_OPTIX
+
 #include <optix_stubs.h>
 #include"PassNode.h"
 #include "RDG/RDG/FrameGraph.h"
@@ -228,3 +230,6 @@ namespace Furnace
         return &mOptiXData;
     }
 }
+
+
+#endif

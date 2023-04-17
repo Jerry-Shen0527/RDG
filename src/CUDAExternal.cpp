@@ -332,7 +332,7 @@ cudaExternalMemory_t FetchExternalTextureMemory(
         native_device.getImageMemoryRequirements(image, &vkMemoryRequirements);
         actualSize = vkMemoryRequirements.size;
 #ifdef _WIN64
-        externalMemoryHandleDesc.type = cudaExternalMemoryHandleTypeOpaqueWin32Kmt;
+        externalMemoryHandleDesc.type = cudaExternalMemoryHandleTypeOpaqueWin32;
         externalMemoryHandleDesc.handle.win32.handle = sharedHandle;
 #else
         externalMemoryHandleDesc.type = cudaExternalMemoryHandleTypeOpaqueFd;
@@ -488,8 +488,6 @@ namespace nvrhi
         }
         else
         {
-            in_desc.mapped_id = CudaLinearBufferDesc::guid++;
-
             auto commandList = device->createCommandList();
 
             if (in_desc.bufferType == CudaLinearBufferDesc::BufferType::TextureMapped)
@@ -527,9 +525,6 @@ namespace nvrhi
         data = nullptr;
     }
 
-    int CudaSurfaceObjectDesc::guid = 1;
-    int CudaLinearBufferDesc::guid = 1;
-    int TextureDesc::guid = 1;
 
     detail::CudaSurfaceObject::CudaSurfaceObject(
         const CudaSurfaceObjectDesc& in_desc,
@@ -543,8 +538,6 @@ namespace nvrhi
         }
         else
         {
-            desc.mapped_id = in_desc.mapped_id = CudaSurfaceObjectDesc::guid++;
-
             auto source_texture = dynamic_cast<nvrhi::ITexture*>(source_resource);
             auto texture_desc = source_texture->getDesc();
             if (texture_desc.sharedResourceFlags != SharedResourceFlags::Shared)

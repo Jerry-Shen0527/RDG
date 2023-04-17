@@ -44,10 +44,9 @@
         }                                                                                    \
     } while (0)
 
+char optix_log[2048];
 namespace nvrhi
 {
-    char optix_log[2048];
-
     detail::OptiXModule::OptiXModule(const OptiXModuleDesc& desc, IDevice* device)
         : desc(desc)
     {
@@ -102,12 +101,24 @@ namespace nvrhi
         OptiXProgramGroupDesc desc,
         std::tuple<OptiXModuleHandle, OptiXModuleHandle, OptiXModuleHandle> modules,
         IDevice* device)
+        : desc(desc)
     {
         assert(desc.prog_group_desc.kind == OPTIX_PROGRAM_GROUP_KIND_HITGROUP);
+
 
         desc.prog_group_desc.hitgroup.moduleIS = std::get<0>(modules)->getModule();
         desc.prog_group_desc.hitgroup.moduleAH = std::get<1>(modules)->getModule();
         desc.prog_group_desc.hitgroup.moduleCH = std::get<2>(modules)->getModule();
+
+        if (desc.prog_group_desc.hitgroup.entryFunctionNameIS == nullptr)
+        {
+            desc.prog_group_desc.hitgroup.moduleIS = nullptr;
+        }
+
+        if (desc.prog_group_desc.hitgroup.entryFunctionNameAH == nullptr)
+        {
+            desc.prog_group_desc.hitgroup.moduleAH = nullptr;
+        }
 
         size_t sizeof_log = sizeof(optix_log);
         OPTIX_CHECK_LOG(

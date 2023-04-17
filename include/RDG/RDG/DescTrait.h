@@ -64,7 +64,7 @@ namespace Furnace
 #define NVRHI_RESOURCE_LIST                                                                     \
     Texture, GraphicsPipeline, Framebuffer, CommandList, BindingLayout, BindlessLayout, Buffer, \
         BindingSet, ComputePipeline, Sampler, DescriptorTable, CudaLinearBuffer,                \
-        CudaSurfaceObject,
+        CudaSurfaceObject
 #endif
 
 #ifdef RDG_WITH_OPTIX

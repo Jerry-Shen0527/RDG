@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef RDG_WITH_OPTIX
+
 #include "./nvrtcConfig.h"
 
 #include <fstream>
@@ -190,3 +192,5 @@ inline const char* getPtxString(
 
     return ptx->c_str();
 }
+
+#endif

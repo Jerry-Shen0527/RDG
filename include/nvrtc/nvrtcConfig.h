@@ -7,7 +7,7 @@
 // Include directories
 #define OptiX_RELATIVE_INCLUDE_DIRS \
   "include", \
-  ".", 
+  ".",  "C:/Users/Jerry/Workspace/Furnace/include"
 #define OptiX_ABSOLUTE_INCLUDE_DIRS \
   "C:/ProgramData/NVIDIA Corporation/OptiX SDK 7.7.0/include", \
   "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include", 

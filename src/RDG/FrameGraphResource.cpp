@@ -32,6 +32,7 @@ namespace Furnace
         return { pComputePassData->command_list, pComputePassData->state };
     }
 
+#ifdef RDG_WITH_CUDA
     FrameGraphResources::CudaPassInfo FrameGraphResources::getCudaPassInfo() const
     {
         // this cast is safe because this can only be called from a RenderPassNode
@@ -39,6 +40,7 @@ namespace Furnace
         const CudaPassNode::CudaPassData* pCudaPassData = renderPassNode.getCudaPassData();
         return { };
     }
+#endif
 
 #ifdef RDG_WITH_OPTIX
     FrameGraphResources::OptiXPassInfo FrameGraphResources::getOptiXPassInfo() const

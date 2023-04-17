@@ -65,9 +65,7 @@ namespace nvrhi
                && lhs.useClearValue == rhs.useClearValue
                && lhs.initialState == rhs.initialState
                && lhs.keepInitialState == rhs.keepInitialState;
-#ifdef RDG_WITH_CUDA
-        return ret && lhs.mapped_id == rhs.mapped_id;
-#endif
+        return ret;
     }
 
     inline bool operator!=(const TextureDesc& lhs, const TextureDesc& rhs)
@@ -380,7 +378,7 @@ namespace nvrhi
     inline bool operator==(const CudaLinearBufferDesc& lhs, const CudaLinearBufferDesc& rhs)
     {
         return lhs.size == rhs.size && lhs.element_size == rhs.element_size &&
-               lhs.bufferType == rhs.bufferType && lhs.mapped_id == rhs.mapped_id;
+               lhs.bufferType == rhs.bufferType && lhs.map_source == rhs.map_source;
     }
 
     inline bool operator!=(const CudaLinearBufferDesc& lhs, const CudaLinearBufferDesc& rhs)
@@ -392,7 +390,7 @@ namespace nvrhi
     {
         return lhs.width == rhs.width && lhs.height == rhs.height &&
                lhs.element_size == rhs.element_size && lhs.bufferType == rhs.bufferType &&
-               lhs.mapped_id == rhs.mapped_id;
+               lhs.map_source == rhs.map_source;
     }
 
     inline bool operator!=(const CudaSurfaceObjectDesc& lhs, const CudaSurfaceObjectDesc& rhs)

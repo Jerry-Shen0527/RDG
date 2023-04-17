@@ -262,6 +262,7 @@ namespace Furnace
 
             nvrhi::OptiXPipelineDesc pipeline_desc;
 
+            // Each module can contain several shaders.
             std::vector<nvrhi::OptiXModuleDesc> module_descs;
 
             std::pair<nvrhi::OptiXProgramGroupDesc, int> ray_gen_group;
