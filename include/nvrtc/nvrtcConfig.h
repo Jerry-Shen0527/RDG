@@ -22,6 +22,7 @@
   "-arch", \
   "compute_86", \
   "-lineinfo", \
+  "-use_fast_math", \
   "-default-device", \
   "-rdc", \
   "true", \

@@ -1,4 +1,3 @@
-
 #ifdef RDG_WITH_CUDA
 
 #include <cuda_runtime_api.h>
@@ -31,7 +30,6 @@ static int idx = 0;
 template<typename ResourceType>
 HANDLE getSharedApiHandle(nvrhi::IDevice* device, ResourceType* texture_handle)
 {
-
     return texture_handle->getNativeObject(nvrhi::ObjectTypes::SharedHandle);
 }
 
@@ -525,7 +523,6 @@ namespace nvrhi
         data = nullptr;
     }
 
-
     detail::CudaSurfaceObject::CudaSurfaceObject(
         const CudaSurfaceObjectDesc& in_desc,
         IResource* source_resource,
@@ -548,6 +545,7 @@ namespace nvrhi
             else
             {
                 surface_obejct = mapTextureToSurface(source_texture, 0, device);
+                in_desc.map_source = source_texture;
             }
         }
     }
@@ -556,5 +554,5 @@ namespace nvrhi
     {
         cudaDestroySurfaceObject(surface_obejct);
     }
-}  // namespace nvrhi
+} // namespace nvrhi
 #endif

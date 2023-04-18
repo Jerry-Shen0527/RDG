@@ -268,6 +268,7 @@ namespace Furnace
             std::pair<nvrhi::OptiXProgramGroupDesc, int> ray_gen_group;
             std::vector<std::tuple<nvrhi::OptiXProgramGroupDesc, int, int, int>> hit_group_group;
             std::vector<std::pair<nvrhi::OptiXProgramGroupDesc, int>> miss_group;
+            std::vector<std::pair<nvrhi::OptiXProgramGroupDesc, int>> callable_group;
 
            private:
             void resolve(ResourceAllocator& resourceAllocator)

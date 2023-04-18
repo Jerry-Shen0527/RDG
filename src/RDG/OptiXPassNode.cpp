@@ -25,6 +25,7 @@ namespace Furnace
     using RayGenSbtRecord = SbtRecord<int>;
     using HitGroupSbtRecord = SbtRecord<int>;
     using MissSbtRecord = SbtRecord<int>;
+    using CallableSbtRecord = SbtRecord<int>;
 
 
     void OptiXPassNode::OptiXPassData::devirtualize(
@@ -60,9 +61,9 @@ namespace Furnace
             nvrhi::OptiXProgramGroupDesc desc = std::get<0>(group);
             desc.prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
             auto modules = std::make_tuple(
-                solidModules[std::get<1>(group)],
-                solidModules[std::get<2>(group)],
-                solidModules[std::get<3>(group)]);
+                std::get<1>(group) >= 0 ? solidModules[std::get<1>(group)] : nullptr,
+                std::get<2>(group) >= 0 ? solidModules[std::get<2>(group)] : nullptr,
+                std::get<3>(group) >= 0 ? solidModules[std::get<3>(group)] : nullptr);
 
             solid_hitgroup_group.push_back(resourceAllocator.create(desc, modules));
         }
@@ -80,6 +81,19 @@ namespace Furnace
             solid_miss_group.push_back(resourceAllocator.create(desc, module));
         }
 
+        const int callable_count = descriptor.callable_group.size();
+
+        solid_callable_group.reserve(callable_count);
+        for (int i = 0; i < callable_count; ++i)
+        {
+            auto group = descriptor.callable_group[i];
+            group.first.prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_CALLABLES;
+            nvrhi::OptiXProgramGroupDesc desc = group.first;
+            auto module = solidModules[group.second];
+
+            solid_callable_group.push_back(resourceAllocator.create(desc, module));
+        }
+
         std::vector<nvrhi::OptiXProgramGroupHandle> program_groups;
         program_groups.push_back(solid_raygen_group);
         program_groups.insert(
@@ -90,6 +104,8 @@ namespace Furnace
             program_groups.end(),
             solid_miss_group.begin(),
             solid_miss_group.end());
+        program_groups.insert(
+            program_groups.end(), solid_callable_group.begin(), solid_callable_group.end());
 
         solid_handle = resourceAllocator.create(descriptor.pipeline_desc, program_groups);
 
@@ -162,7 +178,45 @@ namespace Furnace
         }
         else
         {
-            sbt.missRecordBase = 0;
+            sbt.missRecordCount = sbt.missRecordStrideInBytes = sbt.missRecordBase = 0;
+        }
+
+        if (callable_count > 0)
+        {
+            int callableRecordStrideInBytes =
+                roundUp<size_t>(sizeof(CallableSbtRecord), OPTIX_SBT_RECORD_ALIGNMENT);
+
+            int callable_record_size = callableRecordStrideInBytes * callable_count;
+
+            callable_record = resourceAllocator.create(
+                nvrhi::CudaLinearBufferDesc{ callable_count, callableRecordStrideInBytes });
+
+            void* d_callable_record = callable_record->GetGPUAddress();
+
+            std::vector<CallableSbtRecord> ms_sbts(callable_count);
+            for (int i = 0; i < callable_count; ++i)
+            {
+                // currently, do nothing.
+                OPTIX_CHECK(
+                    optixSbtRecordPackHeader(solid_callable_group[i]->getProgramGroup(), &ms_sbts[i]
+                    ));
+            }
+
+            CUDA_CHECK(
+                cudaMemcpy(
+                    reinterpret_cast<void*>(d_callable_record),
+                    ms_sbts.data(),
+                    callable_record_size,
+                    cudaMemcpyHostToDevice));
+
+            sbt.callablesRecordBase = CUdeviceptr(d_callable_record);
+            sbt.callablesRecordStrideInBytes = callableRecordStrideInBytes;
+            sbt.callablesRecordCount = callable_count;
+        }
+        else
+        {
+            sbt.callablesRecordCount = sbt.callablesRecordStrideInBytes =
+                                       sbt.callablesRecordBase = 0;
         }
 
         sbt.raygenRecord = CUdeviceptr(d_raygen_record);
@@ -191,10 +245,19 @@ namespace Furnace
         }
         solid_miss_group.clear();
 
+        for (int i = 0; i < solid_callable_group.size(); ++i)
+        {
+            resourceAllocator.destroy(solid_callable_group[i]);
+        }
+        solid_callable_group.clear();
+
         resourceAllocator.destroy(solid_raygen_group);
         resourceAllocator.destroy(raygen_record);
         resourceAllocator.destroy(hitgroup_record);
-        resourceAllocator.destroy(miss_record);
+        if (miss_record)
+            resourceAllocator.destroy(miss_record);
+        if (callable_record)
+            resourceAllocator.destroy(callable_record);
         resourceAllocator.destroy(solid_handle);
     }
 

@@ -85,6 +85,13 @@ namespace nvrhi
     {
         desc.prog_group_desc.raygen.module = module->getModule();
 
+        if (desc.prog_group_desc.kind == OPTIX_PROGRAM_GROUP_KIND_CALLABLES)
+        {
+            desc.prog_group_desc.callables.moduleDC = nullptr;
+            desc.prog_group_desc.callables.entryFunctionNameDC = nullptr;
+            desc.prog_group_desc.callables.moduleCC = module->getModule();
+        }
+
         size_t sizeof_log = sizeof(optix_log);
         OPTIX_CHECK_LOG(
             optixProgramGroupCreate(
@@ -105,20 +112,20 @@ namespace nvrhi
     {
         assert(desc.prog_group_desc.kind == OPTIX_PROGRAM_GROUP_KIND_HITGROUP);
 
-
-        desc.prog_group_desc.hitgroup.moduleIS = std::get<0>(modules)->getModule();
-        desc.prog_group_desc.hitgroup.moduleAH = std::get<1>(modules)->getModule();
-        desc.prog_group_desc.hitgroup.moduleCH = std::get<2>(modules)->getModule();
-
-        if (desc.prog_group_desc.hitgroup.entryFunctionNameIS == nullptr)
-        {
+        if (std::get<0>(modules))
+            desc.prog_group_desc.hitgroup.moduleIS = std::get<0>(modules)->getModule();
+        else
             desc.prog_group_desc.hitgroup.moduleIS = nullptr;
-        }
 
-        if (desc.prog_group_desc.hitgroup.entryFunctionNameAH == nullptr)
-        {
+        if (std::get<1>(modules))
+            desc.prog_group_desc.hitgroup.moduleAH = std::get<1>(modules)->getModule();
+        else
             desc.prog_group_desc.hitgroup.moduleAH = nullptr;
-        }
+
+        if (std::get<2>(modules))
+            desc.prog_group_desc.hitgroup.moduleCH = std::get<2>(modules)->getModule();
+        else
+            throw std::runtime_error("A Closest hit shader must be specified.");
 
         size_t sizeof_log = sizeof(optix_log);
         OPTIX_CHECK_LOG(

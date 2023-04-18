@@ -333,10 +333,12 @@ namespace Furnace
             nvrhi::OptiXProgramGroupHandle solid_raygen_group;
             std::vector<nvrhi::OptiXProgramGroupHandle> solid_hitgroup_group;
             std::vector<nvrhi::OptiXProgramGroupHandle> solid_miss_group;
+            std::vector<nvrhi::OptiXProgramGroupHandle> solid_callable_group;
 
             nvrhi::CudaLinearBufferHandle raygen_record;
             nvrhi::CudaLinearBufferHandle hitgroup_record;
             nvrhi::CudaLinearBufferHandle miss_record;
+            nvrhi::CudaLinearBufferHandle callable_record;
         };
 
         OptiXPassNode(FrameGraph& fg, const char* name, FrameGraphPassBase* base) noexcept
