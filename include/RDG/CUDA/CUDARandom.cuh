@@ -79,3 +79,6 @@ rnd_unsigned(unsigned min, unsigned max, unsigned int &prev)
 
     return min + rand_float * (max - min);
 }
+
+
+unsigned *generate_seeds(unsigned size);

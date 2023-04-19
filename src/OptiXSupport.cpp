@@ -1,4 +1,3 @@
-
 #include <iomanip>
 #include <iostream>
 
@@ -45,6 +44,7 @@
     } while (0)
 
 char optix_log[2048];
+
 namespace nvrhi
 {
     detail::OptiXModule::OptiXModule(const OptiXModuleDesc& desc, IDevice* device)
@@ -176,14 +176,14 @@ namespace nvrhi
         uint32_t direct_callable_stack_size_from_state;
         uint32_t continuation_stack_size;
 
-        const uint32_t max_trace_depth = 1;
+        const uint32_t max_trace_depth = desc.pipeline_link_options.maxTraceDepth;
 
         OPTIX_CHECK(
             optixUtilComputeStackSizes(
                 &stack_sizes,
                 max_trace_depth,
-                0, // maxCCDepth
-                0, // maxDCDEpth
+                max_trace_depth + 1, // maxCCDepth
+                0,                                 // maxDCDEpth
                 &direct_callable_stack_size_from_traversal,
                 &direct_callable_stack_size_from_state,
                 &continuation_stack_size));
@@ -193,7 +193,7 @@ namespace nvrhi
                 direct_callable_stack_size_from_traversal,
                 direct_callable_stack_size_from_state,
                 continuation_stack_size,
-                1 // maxTraversableDepth
+                max_trace_depth // maxTraversableDepth
             ));
     }
 
