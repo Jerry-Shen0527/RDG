@@ -20,7 +20,7 @@
 
 #include "ResourceAllocator.h"
 #include "donut/engine/View.h"
-#include "RDG/OptiXSupport.h"
+#include "RDG/OptiX/OptiXSupport.h"
 
 #define NVRHI_ENUM_CLASS_FLAG_OPERATORS(T) \
     inline T operator | (T a, T b) { return T(uint32_t(a) | uint32_t(b)); } \

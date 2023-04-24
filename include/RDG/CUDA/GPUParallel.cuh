@@ -91,9 +91,9 @@ void GPUParallelFor(const char *description, int nItems, F func)
     nvtxRangePush(description);
 #endif
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     std::cerr << "Launching " << std::string(description) << " with size "<< nItems << std::endl;
-#endif
+//#endif
     if (nItems > 0)
     {
         auto kernel = &Kernel<F>;

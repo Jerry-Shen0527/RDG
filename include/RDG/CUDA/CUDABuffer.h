@@ -1,5 +1,8 @@
 #pragma once
 
+#include "cuda_runtime_api.h"
+#include "CUDAException.h"
+
 #define MallocCUDABuffer(size, name)                                        \
     if ((name) != 0)                                                        \
         cudaFree((name));                                                   \

@@ -13,7 +13,7 @@
 #include <cuda_runtime_api.h>
 
 #include"nvrhi/nvrhi.h"
-#include "RDG/OptiXSupport.h"
+#include "RDG/OptiX/OptiXSupport.h"
 
 #define OPTIX_CHECK_LOG(call)                                                                     \
     do                                                                                            \
@@ -195,6 +195,52 @@ namespace nvrhi
                 continuation_stack_size,
                 max_trace_depth // maxTraversableDepth
             ));
+    }
+
+    detail::OptiXTraversable::OptiXTraversable(const OptiXTraversableDesc& desc, IDevice* device)
+        : desc(desc)
+    {
+        OptixAccelBufferSizes gas_buffer_sizes;
+        OPTIX_CHECK(
+            optixAccelComputeMemoryUsage(
+                device->OptixContext(), &desc.buildOptions, &desc.buildInput, 1, &gas_buffer_sizes))
+        ;
+
+        CUdeviceptr deviceTempBufferGAS;
+
+        CUDA_CHECK(
+            cudaMalloc(
+                reinterpret_cast<void**>(&deviceTempBufferGAS), gas_buffer_sizes.tempSizeInBytes));
+        CUDA_CHECK(
+            cudaMalloc(
+                reinterpret_cast<void**>(&traversableBuffer), gas_buffer_sizes.outputSizeInBytes));
+
+        OPTIX_CHECK(
+            optixAccelBuild(
+                device->OptixContext(),
+                0,
+                // CUDA stream
+                &desc.buildOptions,
+                &desc.buildInput,
+                1,
+                // num build inputs
+                deviceTempBufferGAS,
+                gas_buffer_sizes.tempSizeInBytes,
+                traversableBuffer,
+                gas_buffer_sizes.outputSizeInBytes,
+                &handle,
+                nullptr,
+                // emitted property list
+                0 // num emitted properties
+            ));
+        CUDA_SYNC_CHECK();
+        CUDA_CHECK(cudaFree((void*)deviceTempBufferGAS));
+        CUDA_SYNC_CHECK();
+    }
+
+    detail::OptiXTraversable::~OptiXTraversable()
+    {
+        cudaFree((void*)traversableBuffer);
     }
 
     static void
