@@ -551,6 +551,7 @@ mapTextureToCudaTex(nvrhi::ITexture* image_handle, uint32_t cudaUsageFlags, nvrh
 
     cudaTextureObject_t texture;
     auto desc = image_handle->getDesc();
+    auto formatInfo = nvrhi::getFormatInfo(desc.format);
     auto mipLevels = image_handle->getDesc().mipLevels;
 
     cudaTextureDesc texDescr;
@@ -562,8 +563,9 @@ mapTextureToCudaTex(nvrhi::ITexture* image_handle, uint32_t cudaUsageFlags, nvrh
     texDescr.addressMode[0] = cudaAddressModeWrap;
     texDescr.addressMode[1] = cudaAddressModeWrap;
 
-    texDescr.maxMipmapLevelClamp = float(mipLevels - 1);
+    texDescr.sRGB = formatInfo.isSRGB;
 
+    texDescr.maxMipmapLevelClamp = float(mipLevels - 1);
     texDescr.readMode = cudaReadModeNormalizedFloat;
 
     CUDA_CHECK(cudaCreateTextureObject(&texture, &resDesc,&texDescr,nullptr));

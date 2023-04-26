@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
+// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -45,12 +45,12 @@ static __host__ __device__ __inline__ unsigned int tea(unsigned int val0, unsign
     return v0;
 }
 
-// GenerateAdaptive random unsigned int in [0, 2^24)
+// Generate random unsigned int in [0, 2^24)
 static __host__ __device__ __inline__ unsigned int lcg(unsigned int &prev)
 {
     const unsigned int LCG_A = 1664525u;
     const unsigned int LCG_C = 1013904223u;
-    prev = LCG_A * prev + LCG_C;
+    prev = (LCG_A * prev + LCG_C);
     return prev & 0x00FFFFFF;
 }
 
@@ -60,25 +60,15 @@ static __host__ __device__ __inline__ unsigned int lcg2(unsigned int &prev)
     return prev;
 }
 
-// GenerateAdaptive random float in [0, 1)
+// Generate random float in [0, 1)
 static __host__ __device__ __inline__ float rnd(unsigned int &prev)
 {
-    return (float)lcg(prev) / (float)0x01000000;
+    return ((float)lcg(prev) / (float)0x01000000);
 }
 
 static __host__ __device__ __inline__ unsigned int rot_seed(unsigned int seed, unsigned int frame)
 {
     return seed ^ frame;
 }
-
-// GenerateAdaptive random float in [min, max)
-static __host__ __device__ __inline__ unsigned
-rnd_unsigned(unsigned min, unsigned max, unsigned int &prev)
-{
-    float rand_float = rnd(prev);
-
-    return min + rand_float * (max - min);
-}
-
 
 unsigned *generate_seeds(unsigned size);

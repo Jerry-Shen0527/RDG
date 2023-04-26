@@ -14,6 +14,7 @@ unsigned* generate_seeds(unsigned size)
             rnd(seed);
             rnd(seed);
             rnd(seed);
+            rnd(seed);
             ret[i] = seed;
         });
     return ret;

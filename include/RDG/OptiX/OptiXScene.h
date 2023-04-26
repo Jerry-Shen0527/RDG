@@ -68,7 +68,7 @@ namespace donut::engine
         auto table_idx = descriptor.Get();
         if (Space.size() < table_idx + 1)
         {
-            Space.resize(table_idx + 1);
+            Space.resize(table_idx + 1, 0);
         }
         Space[table_idx] = ptr;
     }

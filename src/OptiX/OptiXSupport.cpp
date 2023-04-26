@@ -181,8 +181,8 @@ namespace nvrhi
         OPTIX_CHECK(
             optixUtilComputeStackSizes(
                 &stack_sizes,
-                max_trace_depth,
-                max_trace_depth + 1, // maxCCDepth
+                max_trace_depth+1,
+                max_trace_depth+1, // maxCCDepth
                 0,                                 // maxDCDEpth
                 &direct_callable_stack_size_from_traversal,
                 &direct_callable_stack_size_from_state,
@@ -193,7 +193,7 @@ namespace nvrhi
                 direct_callable_stack_size_from_traversal,
                 direct_callable_stack_size_from_state,
                 continuation_stack_size,
-                max_trace_depth // maxTraversableDepth
+                max_trace_depth+2 // maxTraversableDepth
             ));
     }
 
