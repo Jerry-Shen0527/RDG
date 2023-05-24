@@ -262,7 +262,6 @@ namespace nvrhi
             options.logCallbackFunction = &context_log_cb;
             options.logCallbackLevel = 4;
             OPTIX_CHECK(optixDeviceContextCreate(0, &options, &optixContext));
-            CUDA_CHECK(cudaStreamCreate(&optixStream));
         }
         isOptiXInitalized = true;
     }
